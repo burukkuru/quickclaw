@@ -22,8 +22,8 @@ species_data = pb.pokemon_species(species_query)
 decap_names = False 
 
 ### constant ###
-def create_constant(str):
-    temp_const = str.upper()
+def create_constant(s):
+    temp_const = s.upper()
     constant = ''
     for c in temp_const:
         if c.isalpha() == False:
