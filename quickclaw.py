@@ -1,6 +1,5 @@
 ### quickclaw.py ###
 # script to automate adding new pokemon species to pokecrystal
-# TODO: Write to pokecrystal files
 
 import pokebase as pb
 import sys
@@ -18,7 +17,9 @@ species_data = pb.pokemon_species(species_query)
 
 # user settings
 # enable if using decapitalized species names
-decap_names = False 
+decap_names = False
+# enable if using pokecrystal16
+pc16 = False 
 
 ### constant ###
 def create_constant(s):
@@ -56,6 +57,22 @@ for i in range(len(name), 10): # max length of species name
     name += '@' # padding
 name = '"' + name + '"'
 print('Created name: ' + name)
+
+# write name to asm
+with open('data/pokemon/names.asm', 'r+') as f:
+    line_num = 0
+    s = 'assert_table_length NUM_POKEMON'
+    data = f.readlines()
+    for row in data:
+        line_num += 1
+        if row.find(s) != -1:
+            break
+    data.insert(line_num-1, '\tdb ' + name + '\n')
+    f.seek(0)
+    f.writelines(data)
+    print('Wrote name ' + name + ' to data/pokemon/names.asm')
+# TODO: add compatability with pokecrystal16 (doesn't have assert_table_length NUM_POKEMON)
+# simply append name to the file
 
 ### base stats asm ###
 # create base_stats/species.asm
