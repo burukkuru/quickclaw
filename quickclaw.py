@@ -1,7 +1,6 @@
 ### quickclaw.py ###
 # script to automate adding new pokemon species to pokecrystal
 # TODO: Write to pokecrystal files
-# TODO: take functionality from constant section to make generate constant function
 
 import pokebase as pb
 import sys
@@ -60,7 +59,8 @@ special_attack  = str(species.stats[3].base_stat)
 special_defense = str(species.stats[4].base_stat)
 speed           = str(species.stats[5].base_stat)
 
-print('Found stats: \tBST:' + base_stat_total + '\nHP:' + hp + '\tATK:' + attack + '\tDEF:' + defense + 
+print('Found stats: \tBST:' + base_stat_total + 
+'\nHP:' + hp + '\tATK:' + attack + '\tDEF:' + defense + 
 '\nSPD:' + speed + '\tSAT:' + special_attack + '\tSDF:' + special_defense)
 
 # ev yield
@@ -113,7 +113,7 @@ print('Found growth rate: ' + growth_rate)
 
 # egg groups
 egg_groups = { 'monster': 'EGG_MONSTER', 'water1': 'EGG_WATER_1', 'bug': 'EGG_BUG', 'flying': 'EGG_FLYING', 
-'ground': 'EGG_GROUND', 'fairy': 'EGG_FAIRY', 'plant': 'EGG_PLANT', 'humanshape': 'EGG_HUMANSHAPRE',
+'ground': 'EGG_GROUND', 'fairy': 'EGG_FAIRY', 'plant': 'EGG_PLANT', 'humanshape': 'EGG_HUMANSHAPE',
 'water3': 'EGG_WATER_3', 'mineral': 'EGG_MINERAL', 'indeterminate': 'EGG_INDETERMINATE', 'water2': 'EGG_WATER_2', 
 'ditto': 'EGG_DITTO', 'dragon': 'EGG_DRAGON', 'no-eggs': 'EGG_NONE' }
 egg_group1 = egg_groups[str(species_data.egg_groups[0])]
