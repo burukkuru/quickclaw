@@ -36,7 +36,7 @@ print('Created constant: ' + constant)
 # write constant to asm
 with open('constants/pokemon_constants.asm', 'r+') as f:
     line_num = 0
-    s = 'DEF NUM_POKEMON EQU const_value - 1'
+    s = 'NUM_POKEMON EQU const_value'
     data = f.readlines()
     for row in data:
         line_num += 1
