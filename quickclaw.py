@@ -29,8 +29,23 @@ def create_constant(s):
             c = '_'
         constant += c
     return constant
+
 constant = create_constant(species.name)
 print('Created constant: ' + constant)
+
+# write constant to asm
+with open('constants/pokemon_constants.asm', 'r+') as f:
+    line_num = 0
+    s = 'DEF NUM_POKEMON EQU const_value - 1'
+    data = f.readlines()
+    for row in data:
+        line_num += 1
+        if row.find(s) != -1:
+            break
+    data.insert(line_num-1, '\tconst ' + constant + '\n')
+    f.seek(0)
+    f.writelines(data)
+    print('Wrote constant ' + constant + ' to constants/pokemon_constants.asm')
 
 ### species name ###
 if decap_names:
