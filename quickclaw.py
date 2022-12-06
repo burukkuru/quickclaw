@@ -76,7 +76,15 @@ with open('data/pokemon/names.asm', 'r+') as f:
 
 ### base stats asm ###
 # create base_stats/species.asm
+name_as_filename = constant.lower()
+stats_asm = 'data/pokemon/base_stats/' + name_as_filename + '.asm'
+f = open(stats_asm, 'x')
+print('Created file: ' + stats_asm)
+f.close()
 
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + constant + '\n\n')
+    print('Wrote constant to ' + stats_asm)
 
 # base stat total
 bst_temp = 0
@@ -94,6 +102,26 @@ speed           = str(species.stats[5].base_stat)
 print('Found stats: \tBST:' + base_stat_total + 
 '\nHP:' + hp + '\tATK:' + attack + '\tDEF:' + defense + 
 '\nSPD:' + speed + '\tSAT:' + special_attack + '\tSDF:' + special_defense)
+# TODO: clean this up
+if(len(hp) == 2):
+    hp = ' ' + hp
+if(len(attack) == 2):
+    attack = ' ' + attack
+if(len(defense) == 2):
+    defense = ' ' + defense
+if(len(speed) == 2):
+    speed = ' ' + speed
+if(len(special_attack) == 2):
+    special_attack = ' ' + special_attack
+if(len(special_defense) == 2):
+    special_defense = ' ' + special_defense
+
+# write base stats to asm
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + hp + ', ' + attack + ', ' + defense + ', ' + speed + ', ' 
+    + special_attack + ', ' + special_defense + ' ; ' + base_stat_total + ' BST\n')
+    f.write('\t;   hp  atk  def  spd  sat  sdf\n\n')
+    print('Wrote stats to ' + stats_asm)
 
 # ev yield
 # TODO: cli argument for if user added in evs
