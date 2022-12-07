@@ -5,7 +5,6 @@ import pokebase as pb
 import sys
 
 ### handle cli arguments ###
-# TODO: handle species names containing spaces
 if (len(sys.argv) > 1):
     species_query = sys.argv[1]
 else:
@@ -31,7 +30,7 @@ def create_constant(s):
         constant += c
     return constant
 
-constant = create_constant(species.name)
+constant = create_constant(species_data.names[8].name)
 print('Created constant: ' + constant)
 
 # write constant to asm
@@ -50,9 +49,9 @@ with open('constants/pokemon_constants.asm', 'r+') as f:
 
 ### species name ###
 if decap_names:
-    name = species.name.title()
+    name = species_data.names[8].name
 else:
-    name = species.name.upper()
+    name = species_data.names[8].name.upper()
 for i in range(len(name), 10): # max length of species name
     name += '@' # padding
 name = '"' + name + '"'
