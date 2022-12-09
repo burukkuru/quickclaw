@@ -14,12 +14,6 @@ else:
 species = pb.pokemon(species_query)
 species_data = pb.pokemon_species(species_query)
 
-# user settings
-# enable if using decapitalized species names
-decap_names = False
-# enable if using pokecrystal16
-pc16 = False 
-
 ### constant ###
 def create_constant(s):
     temp_const = s.upper()
@@ -48,10 +42,7 @@ with open('constants/pokemon_constants.asm', 'r+') as f:
     print('Wrote constant ' + constant + ' to constants/pokemon_constants.asm')
 
 ### species name ###
-if decap_names:
-    name = species_data.names[8].name
-else:
-    name = species_data.names[8].name.upper()
+name = species_data.names[8].name
 for i in range(len(name), 10): # max length of species name
     name += '@' # padding
 name = '"' + name + '"'
@@ -70,8 +61,6 @@ with open('data/pokemon/names.asm', 'r+') as f:
     f.seek(0)
     f.writelines(data)
     print('Wrote name ' + name + ' to data/pokemon/names.asm')
-# TODO: add compatability with pokecrystal16 (doesn't have assert_table_length NUM_POKEMON)
-# simply append name to the file
 
 ### base stats asm ###
 # create base_stats/species.asm
@@ -99,7 +88,7 @@ special_defense = str(species.stats[4].base_stat)
 speed           = str(species.stats[5].base_stat)
 
 print('Found stats: \tBST:' + base_stat_total + 
-'\nHP:' + hp + '\tATK:' + attack + '\tDEF:' + defense + 
+'\nHP: ' + hp + '\tATK:' + attack + '\tDEF:' + defense + 
 '\nSPD:' + speed + '\tSAT:' + special_attack + '\tSDF:' + special_defense)
 # TODO: clean this up
 if(len(hp) == 2):
@@ -119,15 +108,28 @@ if(len(special_defense) == 2):
 with open(stats_asm, 'a') as f:
     f.write('\tdb ' + hp + ', ' + attack + ', ' + defense + ', ' + speed + ', ' 
     + special_attack + ', ' + special_defense + ' ; ' + base_stat_total + ' BST\n')
-    f.write('\t;   hp  atk  def  spd  sat  sdf\n\n')
     print('Wrote stats to ' + stats_asm)
 
 # ev yield
-# TODO: cli argument for if user added in evs
+ev_hp              = str(species.stats[0].effort)
+ev_attack          = str(species.stats[1].effort)
+ev_defense         = str(species.stats[2].effort)
+ev_special_attack  = str(species.stats[3].effort)
+ev_special_defense = str(species.stats[4].effort)
+ev_speed           = str(species.stats[5].effort)
 
+print('Found ev yields:' +
+'\nHP: ' + ev_hp + '\tATK:' + ev_attack + '\tDEF:' + ev_defense + 
+'\nSPD:' + ev_speed + '\tSAT:' + ev_special_attack + '\tSDF:' + ev_special_defense)
+
+# write evs to asm
+with open(stats_asm, 'a') as f:
+    f.write('\tevs  ' + ev_hp + ',   ' + ev_attack + ',   ' + ev_defense + ',   ' 
+    + ev_speed + ',   ' + ev_special_attack + ',   ' + ev_special_defense)
+    f.write('\n\t;   hp  atk  def  spd  sat  sdf\n\n')
+    print('Wrote ev yields to ' + stats_asm)
 
 # types
-# TODO: additional check if type exists (fairy)
 type1 = str(species.types[0].type).upper()
 if len(species.types) == 1: # if species only has 1 type
     type2 = type1 # duplicate primary type
@@ -163,8 +165,6 @@ step_cycles_to_hatch = str(species_data.hatch_counter)
 print('Found step cycles to hatch: ' + step_cycles_to_hatch)
 
 # growth rate
-# TODO: apply similar warning to held item check if erratic and fluctuating growth
-# rates do not exist in the pokecrystal repo
 growth_rates = { 'medium': 'GROWTH_MEDIUM_FAST', 'medium-slow': 'GROWTH_MEDIUM_SLOW', 'fast': 'GROWTH_FAST', 
 'slow': "GROWTH_SLOW", 'slow-then-very-fast': 'GROWTH_ERRATIC', 'fast-then-very-slow': 'GROWTH_FLUCTUATING' }
 growth_rate = growth_rates[str(species_data.growth_rate)]
