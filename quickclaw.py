@@ -136,6 +136,10 @@ if len(species.types) == 1: # if species only has 1 type
     type2 = type1 # duplicate primary type
 else:
     type2 = str(species.types[1].type).upper()
+if type1 == 'PSYCHIC':
+    type1 = 'PSYCHIC_TYPE'
+if type2 == 'PSYCHIC':
+    type2 = 'PSYCHIC_TYPE'
 print('Found types: ' + type1 + ', ' + type2)
 
 with open(stats_asm, 'a') as f:
