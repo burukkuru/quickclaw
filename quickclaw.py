@@ -71,8 +71,8 @@ print('Created file: ' + stats_asm)
 f.close()
 
 with open(stats_asm, 'a') as f:
-    f.write('\tdb ' + constant + '\n\n')
-    print('Wrote constant to ' + stats_asm)
+    f.write('\tdb 0 ; species ID placeholder' + '\n\n')
+    print('Wrote species ID placeholder to ' + stats_asm)
 
 # base stat total
 bst_temp = 0
@@ -130,6 +130,7 @@ with open(stats_asm, 'a') as f:
     print('Wrote ev yields to ' + stats_asm)
 
 # types
+# TODO: convert PSYCHIC to PSYCHIC_TYPE
 type1 = str(species.types[0].type).upper()
 if len(species.types) == 1: # if species only has 1 type
     type2 = type1 # duplicate primary type
@@ -137,13 +138,25 @@ else:
     type2 = str(species.types[1].type).upper()
 print('Found types: ' + type1 + ', ' + type2)
 
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + type1 + ', ' + type2 + ' ; type\n')
+    print('Wrote types to ' + stats_asm)
+
 # catch rate
 catch_rate = str(species_data.capture_rate)
 print('Found catch rate: ' + catch_rate)
 
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + catch_rate + ' ; catch rate\n')
+    print('Wrote catch rate to ' + stats_asm)
+
 # base exp
 base_exp = str(species.base_experience)
 print('Found base exp: ' + base_exp)
+
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + base_exp + ' ; base exp\n')
+    print('Wrote base exp to ' + stats_asm)
 
 # held items # TODO: add held item functionality
 # TODO: check item constants pulled from pokebase against 
@@ -154,21 +167,47 @@ item_common = 'NO_ITEM'
 item_rare = 'NO_ITEM'
 print('Found items: ' + item_common + ', ' + item_rare)
 
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + item_common + ', ' + item_rare + ' ; items\n')
+    print('Wrote items to ' + stats_asm)
+
 # gender ratio
 gender_ratios = { '0': 'GENDER_F0', '1': 'GENDER_F12_5', '2': 'GENDER_F25', '4': 'GENDER_F50', '6': 'GENDER_F75', 
 '8': 'GENDER_F100', '-1': 'GENDER_UNKNOWN' }
 gender_ratio = gender_ratios[str(species_data.gender_rate)]
 print('Found gender ratio: ' + gender_ratio)
 
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + gender_ratio + ' ; gender ratio\n')
+    print('Wrote gender ratio to ' + stats_asm)
+
 # step cycles to hatch
 step_cycles_to_hatch = str(species_data.hatch_counter)
 print('Found step cycles to hatch: ' + step_cycles_to_hatch)
 
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + step_cycles_to_hatch + ' ; step cycles to hatch\n')
+    print('Wrote step cycles to hatch to ' + stats_asm)
+
+# incbin
+with open(stats_asm, 'a') as f:
+    f.write('\tINCBIN "gfx/pokemon/' + name_as_filename + '/front.dimensions"\n')
+    print('Wrote sprite dimensions to ' + stats_asm)
+
+# unused
+with open(stats_asm, 'a') as f:
+    f.write('\tdw NULL, NULL ; unused (beta front/back pics)\n')
+    print('Wrote unused data to ' + stats_asm)
+ 
 # growth rate
 growth_rates = { 'medium': 'GROWTH_MEDIUM_FAST', 'medium-slow': 'GROWTH_MEDIUM_SLOW', 'fast': 'GROWTH_FAST', 
 'slow': "GROWTH_SLOW", 'slow-then-very-fast': 'GROWTH_ERRATIC', 'fast-then-very-slow': 'GROWTH_FLUCTUATING' }
 growth_rate = growth_rates[str(species_data.growth_rate)]
 print('Found growth rate: ' + growth_rate)
+
+with open(stats_asm, 'a') as f:
+    f.write('\tdb ' + growth_rate + ' ; growth rate\n')
+    print('Wrote growth rate to ' + stats_asm)
 
 # egg groups
 egg_groups = { 'monster': 'EGG_MONSTER', 'water1': 'EGG_WATER_1', 'bug': 'EGG_BUG', 'flying': 'EGG_FLYING', 
@@ -181,6 +220,10 @@ if len(species_data.egg_groups) == 1: # if species only has 1 egg group
 else:
     egg_group2 = egg_groups[str(species_data.egg_groups[1])]
 print('Found egg groups: ' + egg_group1 + ', ' + egg_group2)
+
+with open(stats_asm, 'a') as f:
+    f.write('\tdn ' + egg_group1 + ', ' + egg_group2 + ' ; egg groups\n\n')
+    print('Wrote egg groups to ' + stats_asm)
 
 # tm/hm learnset
 # TODO: check this against list of valid tms
