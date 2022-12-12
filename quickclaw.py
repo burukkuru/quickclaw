@@ -18,6 +18,14 @@ else:
 species = pb.pokemon(species_query)
 species_data = pb.pokemon_species(species_query)
 
+def search_file(data, s):
+    line_num = 0
+    for row in data:
+        line_num += 1
+        if row.find(s) != -1:
+            break
+    return line_num
+
 ### constant ###
 def create_constant(s):
     temp_const = s.upper()
@@ -33,13 +41,8 @@ print('Created constant: ' + constant)
 
 # write constant to asm
 with open('constants/pokemon_constants.asm', 'r+') as f:
-    line_num = 0
-    s = 'NUM_POKEMON EQU const_value'
     data = f.readlines()
-    for row in data:
-        line_num += 1
-        if row.find(s) != -1:
-            break
+    line_num = search_file(data, 'NUM_POKEMON EQU const_value')
     data.insert(line_num-1, '\tconst ' + constant + '\n')
     f.seek(0)
     f.writelines(data)
@@ -54,13 +57,8 @@ print('Created name: ' + name)
 
 # write name to asm
 with open('data/pokemon/names.asm', 'r+') as f:
-    line_num = 0
-    s = 'assert_table_length NUM_POKEMON'
     data = f.readlines()
-    for row in data:
-        line_num += 1
-        if row.find(s) != -1:
-            break
+    line_num = search_file(data, 'assert_table_length NUM_POKEMON')
     data.insert(line_num-1, '\tdb ' + name + '\n')
     f.seek(0)
     f.writelines(data)
@@ -243,14 +241,41 @@ with open(stats_asm, 'a') as f:
     f.write('\tdn ' + egg_group1 + ', ' + egg_group2 + ' ; egg groups\n\n')
     print('Wrote egg groups to ' + stats_asm)
 
-# tm/hm learnset
-# TODO: check this against list of valid tms
-tm_learnset = ''
+### learnset ###
+# create list of moves
+moves = []
+for x in species.moves:
+    moves.append((x.version_group_details[0].level_learned_at, create_constant(str(x.move))))
+moves.sort()
+print('Found valid moves for species')
 
-### evolutions and level-up learnset ###
-lvl_learnset = ''
+# create list of valid tms from pokecrystal
+# TODO: hms and move tutors
+tms = []
+with open('constants/item_constants.asm', 'r') as f:
+    data = f.readlines()
+    begin = search_file(data, 'DEF TM01 EQU const_value')
+    end = search_file(data, 'DEF NUM_TMS EQU __tmhm_value__ - 1')
 
-for i in species.moves:
-    lvl_learnset += create_constant(str(i.move)) + ', '
+    for line in data[begin:end-1]:
+        tm_move = line[8:line.find(' ', 8)]
+        tms.append(tm_move)
+print('Found valid tms/hms/tutors defined in pokecrystal')
 
-print(lvl_learnset)
+# tm compatibility for this species
+tm_compat = []
+for move in tms:
+    if any([move in tup for tup in moves]):
+        tm_compat.append(move)
+print('Found tm compatibility for species')
+
+with open(stats_asm, 'a') as f:
+    f.write('\t; tm/hm learnset\n\ttmhm ')
+    last_item = tm_compat[-1]
+    for move in tm_compat:
+        if move == last_item:
+            f.write(move)
+        else:
+            f.write(move + ', ')
+    f.write('\n\t; end\n')
+    print('Wrote tm compatibility to ' + stats_asm)
