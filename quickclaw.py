@@ -1,6 +1,10 @@
 ### quickclaw.py ###
 # script to automate adding new pokemon species to pokecrystal
 
+# TODO: add cli flags: evs, decap, pc16, nofillerdata
+# flag for ignoring quickclaw checks for if a given item or move exists in pokecrystal project
+# implemented after main functionality is working
+
 import pokebase as pb
 import sys
 
@@ -130,7 +134,6 @@ with open(stats_asm, 'a') as f:
     print('Wrote ev yields to ' + stats_asm)
 
 # types
-# TODO: convert PSYCHIC to PSYCHIC_TYPE
 type1 = str(species.types[0].type).upper()
 if len(species.types) == 1: # if species only has 1 type
     type2 = type1 # duplicate primary type
@@ -162,13 +165,20 @@ with open(stats_asm, 'a') as f:
     f.write('\tdb ' + base_exp + ' ; base exp\n')
     print('Wrote base exp to ' + stats_asm)
 
-# held items # TODO: add held item functionality
+# held items
 # TODO: check item constants pulled from pokebase against 
 # those in pokecrystal repo. display warning if there is no
 # matching item constant
-print('Warning: Wild held items are currently not handled by quickclaw.py')
 item_common = 'NO_ITEM'
 item_rare = 'NO_ITEM'
+for x in species.held_items:
+    if x.version_details[0].rarity == 100:
+        item_common = create_constant(str(x.item))
+        item_rare = item_common
+    if x.version_details[0].rarity == 50:
+        item_common = create_constant(str(x.item))
+    if x.version_details[0].rarity == 5:
+        item_rare = create_constant(str(x.item))
 print('Found items: ' + item_common + ', ' + item_rare)
 
 with open(stats_asm, 'a') as f:
@@ -185,6 +195,8 @@ with open(stats_asm, 'a') as f:
     f.write('\tdb ' + gender_ratio + ' ; gender ratio\n')
     print('Wrote gender ratio to ' + stats_asm)
 
+# unknown 1 data (if user left filler data enabled)
+
 # step cycles to hatch
 step_cycles_to_hatch = str(species_data.hatch_counter)
 print('Found step cycles to hatch: ' + step_cycles_to_hatch)
@@ -192,6 +204,8 @@ print('Found step cycles to hatch: ' + step_cycles_to_hatch)
 with open(stats_asm, 'a') as f:
     f.write('\tdb ' + step_cycles_to_hatch + ' ; step cycles to hatch\n')
     print('Wrote step cycles to hatch to ' + stats_asm)
+
+# unknown 2 data (if user left filler data enabled)
 
 # incbin
 with open(stats_asm, 'a') as f:
@@ -202,7 +216,7 @@ with open(stats_asm, 'a') as f:
 with open(stats_asm, 'a') as f:
     f.write('\tdw NULL, NULL ; unused (beta front/back pics)\n')
     print('Wrote unused data to ' + stats_asm)
- 
+
 # growth rate
 growth_rates = { 'medium': 'GROWTH_MEDIUM_FAST', 'medium-slow': 'GROWTH_MEDIUM_SLOW', 'fast': 'GROWTH_FAST', 
 'slow': "GROWTH_SLOW", 'slow-then-very-fast': 'GROWTH_ERRATIC', 'fast-then-very-slow': 'GROWTH_FLUCTUATING' }
