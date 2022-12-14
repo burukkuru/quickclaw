@@ -245,7 +245,11 @@ with open(stats_asm, 'a') as f:
 # create list of moves
 moves = []
 for x in species.moves:
-    moves.append((x.version_group_details[0].level_learned_at, create_constant(str(x.move))))
+    lvl = x.version_group_details[0].level_learned_at
+    move = create_constant(str(x.move))
+    if move == 'PSYCHIC':
+        move = 'PSYCHIC_M'
+    moves.append((lvl, move))
 moves.sort()
 print('Found valid moves for species')
 
@@ -267,7 +271,7 @@ tm_compat = []
 for move in tms:
     if any([move in tup for tup in moves]):
         tm_compat.append(move)
-print('Found tm compatibility for species')
+print('Created tm compatibility for species')
 
 with open(stats_asm, 'a') as f:
     f.write('\t; tm/hm learnset\n\ttmhm ')
