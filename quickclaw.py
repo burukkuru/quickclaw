@@ -241,7 +241,7 @@ with open(stats_asm, 'a') as f:
     f.write('\tdn ' + egg_group1 + ', ' + egg_group2 + ' ; egg groups\n\n')
     print('Wrote egg groups to ' + stats_asm)
 
-### learnset ###
+# tm/hm/mt learnset
 # create list of moves
 moves = []
 for x in species.moves:
@@ -297,6 +297,15 @@ with open(stats_asm, 'a') as f:
             f.write(move + ', ')
     f.write('\n\t; end\n')
     print('Wrote tm compatibility to ' + stats_asm)
+
+# add base stats asm
+with open('data/pokemon/base_stats.asm', 'r+') as f:
+    data = f.readlines()
+    line_num = search_file(data, 'assert_table_length NUM_POKEMON')
+    data.insert(line_num-1, 'INCLUDE "' + stats_asm + '"\n')
+    f.seek(0)
+    f.writelines(data)
+    print('Wrote base_stats asm path to data/pokemon/base_stats.asm')
 
 # level-up learnset
 pokecrystal_moves = []
