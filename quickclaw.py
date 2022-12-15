@@ -254,13 +254,27 @@ moves.sort()
 print('Found valid moves for species')
 
 # create list of valid tms from pokecrystal
-# TODO: hms and move tutors
 tms = []
 with open('constants/item_constants.asm', 'r') as f:
     data = f.readlines()
+
+    # tms
     begin = search_file(data, 'DEF TM01 EQU const_value')
     end = search_file(data, 'DEF NUM_TMS EQU __tmhm_value__ - 1')
+    for line in data[begin:end-1]:
+        tm_move = line[8:line.find(' ', 8)]
+        tms.append(tm_move)
 
+    # hms
+    begin = search_file(data, 'DEF HM01 EQU const_value')
+    end = search_file(data, 'DEF NUM_HMS EQU __tmhm_value__ - NUM_TMS - 1')
+    for line in data[begin:end-1]:
+        tm_move = line[8:line.find(' ', 8)]
+        tms.append(tm_move)
+    
+    # tutor moves
+    begin = search_file(data, 'DEF MT01 EQU const_value')
+    end = search_file(data, 'DEF NUM_TUTORS = __tmhm_value__ - NUM_TMS - NUM_HMS - 1')
     for line in data[begin:end-1]:
         tm_move = line[8:line.find(' ', 8)]
         tms.append(tm_move)
