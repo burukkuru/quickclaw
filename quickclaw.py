@@ -297,3 +297,14 @@ with open(stats_asm, 'a') as f:
             f.write(move + ', ')
     f.write('\n\t; end\n')
     print('Wrote tm compatibility to ' + stats_asm)
+
+# level-up learnset
+pokecrystal_moves = []
+with open('constants/move_constants.asm', 'r') as f:
+    data = f.readlines()
+    begin = search_file(data, 'const_def')
+    end = search_file(data, 'DEF NUM_ATTACKS EQU const_value - 1')
+    for line in data[begin:end-1]:
+        pokecrystal_moves = line[8:line.find(' ', 7)]
+        tms.append(pokecrystal_moves)
+print('Found all valid moves defined in pokecrystal')
