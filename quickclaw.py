@@ -367,6 +367,18 @@ with open('data/pokemon/base_stats.asm', 'r+') as f:
     print('Wrote base_stats asm path to data/pokemon/base_stats.asm')
 
 ### level-up learnset ###
+# evos attack pointers
+name_as_variable_temp = constant.title()
+name_as_variable = ''
+for c in name_as_variable_temp:
+    if c.isalpha():
+        name_as_variable += c
+with open('data/pokemon/evos_attacks_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw ' + name_as_variable + 'EvosAttacks\n')
+    print('Wrote evos attack pointer to data/pokemon/evos_attacks_pointers.asm')
+
+# create list of all valid moves from pokecrystal
 pokecrystal_moves = []
 with open('constants/move_constants.asm', 'r') as f:
     data = f.readlines()
