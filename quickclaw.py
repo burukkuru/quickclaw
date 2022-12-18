@@ -32,8 +32,19 @@ def search_file(data, s):
             break
     return line_num
 
-# appends entries gathered from a file to a list
+# inserts string into file
+# file - file to be written to
 # data - contents of file
+# s_search - search key
+# s_insert - string to be inserted
+def insert_file(file, data, s_search, s_insert):
+    line_num = search_file(data, s_search)
+    data.insert(line_num-1, s_insert)
+    file.seek(0)
+    file.writelines(data)
+
+# appends entries gathered from a file to a list
+# data - contents of flie
 # list - entries are appended to
 # s_begin - search key marking beginning of range of file
 # s_end - search key marking end of range of file
@@ -65,10 +76,7 @@ print('Created constant: ' + constant)
 # write constant to asm
 with open('constants/pokemon_constants.asm', 'r+') as f:
     data = f.readlines()
-    line_num = search_file(data, 'NUM_POKEMON EQU const_value')
-    data.insert(line_num-1, '\tconst ' + constant + '\n')
-    f.seek(0)
-    f.writelines(data)
+    insert_file(f, data, 'NUM_POKEMON EQU const_value', '\tconst ' + constant + '\n')
     print('Wrote constant ' + constant + ' to constants/pokemon_constants.asm')
 
 ### species name ###
@@ -81,10 +89,7 @@ print('Created name: ' + name)
 # write name to asm
 with open('data/pokemon/names.asm', 'r+') as f:
     data = f.readlines()
-    line_num = search_file(data, 'assert_table_length NUM_POKEMON')
-    data.insert(line_num-1, '\tdb ' + name + '\n')
-    f.seek(0)
-    f.writelines(data)
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ' + name + '\n')
     print('Wrote name ' + name + ' to data/pokemon/names.asm')
 
 ### base stats asm ###
@@ -309,13 +314,10 @@ with open(stats_asm, 'a') as f:
 # add base stats asm
 with open('data/pokemon/base_stats.asm', 'r+') as f:
     data = f.readlines()
-    line_num = search_file(data, 'assert_table_length NUM_POKEMON')
-    data.insert(line_num-1, 'INCLUDE "' + stats_asm + '"\n')
-    f.seek(0)
-    f.writelines(data)
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', 'INCLUDE "' + stats_asm + '"\n')
     print('Wrote base_stats asm path to data/pokemon/base_stats.asm')
 
-# level-up learnset
+### level-up learnset ###
 pokecrystal_moves = []
 with open('constants/move_constants.asm', 'r') as f:
     data = f.readlines()
