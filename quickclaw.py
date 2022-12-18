@@ -1,27 +1,11 @@
 ### quickclaw.py ###
 # script to automate adding new pokemon species to pokecrystal
 
-# TODO: add cli flags: evs, decap, pc16, nofillerdata
-# flag for ignoring quickclaw checks for if a given item or move exists in pokecrystal project
-# implemented after main functionality is working
-
 import pokebase as pb
 import io
 import sys
 
-### handle cli arguments ###
-if (len(sys.argv) > 1):
-    species_query = sys.argv[1]
-else:
-    print('Error: No species given')
-    quit()
-
-species = pb.pokemon(species_query)
-species_data = pb.pokemon_species(species_query)
-
-
 ### functions ###
-
 # returns line number of string in file
 # data - contents of file
 # s - search key
@@ -83,6 +67,38 @@ def pad_string(s: str, max: int, filler = ' ', before = True) -> str:
                 s = s + filler
     return s
 
+### handle cli arguments ###
+if (len(sys.argv) > 1):
+    species_query = sys.argv[1]
+else:
+    print('Error: No species given')
+    quit()
+
+species = pb.pokemon(species_query)
+species_data = pb.pokemon_species(species_query)
+
+args = []
+if (len(sys.argv) > 2):
+    for x in range(2, len(sys.argv)):
+        args.append(sys.argv[x])
+
+flag_evs = False
+flag_decap = False
+flag_pc16 = False
+flag_no_filler_data = False
+flag_no_filler_pics = False
+
+if '-evs' in args:
+    flag_evs = True
+if '-decap' in args:
+    flag_decap = True
+if '-pc16' in args:
+    flag_pc16 = True
+if '-nofillerdata' in args:
+    flag_no_filler_data = True
+if '-nofillerpics' in args:
+    flag_no_filler_pics = True
+
 ### constant ###
 constant = create_constant(species_data.names[8].name)
 print('Created constant: ' + constant)
@@ -95,6 +111,8 @@ with open('constants/pokemon_constants.asm', 'r+') as f:
 
 ### species name ###
 name = species_data.names[8].name
+if(flag_decap == False):
+    name = name.upper()
 name = pad_string(name, 10, '@', False)
 name = '"' + name + '"'
 print('Created name: ' + name)
@@ -113,8 +131,12 @@ with open(stats_asm, 'x'):
     print('Created file: ' + stats_asm)
 
 with open(stats_asm, 'a') as f:
-    f.write('\tdb 0 ; species ID placeholder' + '\n\n')
-    print('Wrote species ID placeholder to ' + stats_asm)
+    if(flag_pc16):
+        f.write('\tdb 0 ; species ID placeholder' + '\n\n')
+        print('Wrote species ID placeholder to ' + stats_asm)
+    else:
+        f.write('\tdb ' + constant + '\n\n')
+        print('Wrote species ID to ' + stats_asm)
 
 # base stat total
 bst_temp = 0
@@ -146,23 +168,26 @@ with open(stats_asm, 'a') as f:
     print('Wrote stats to ' + stats_asm)
 
 # ev yield
-ev_hp              = str(species.stats[0].effort)
-ev_attack          = str(species.stats[1].effort)
-ev_defense         = str(species.stats[2].effort)
-ev_special_attack  = str(species.stats[3].effort)
-ev_special_defense = str(species.stats[4].effort)
-ev_speed           = str(species.stats[5].effort)
+if(flag_evs):
+    ev_hp              = str(species.stats[0].effort)
+    ev_attack          = str(species.stats[1].effort)
+    ev_defense         = str(species.stats[2].effort)
+    ev_special_attack  = str(species.stats[3].effort)
+    ev_special_defense = str(species.stats[4].effort)
+    ev_speed           = str(species.stats[5].effort)
 
-print('Found ev yields:' +
-'\nHP: ' + ev_hp + '\tATK:' + ev_attack + '\tDEF:' + ev_defense + 
-'\nSPD:' + ev_speed + '\tSAT:' + ev_special_attack + '\tSDF:' + ev_special_defense)
+    print('Found ev yields:' +
+    '\nHP: ' + ev_hp + '\tATK:' + ev_attack + '\tDEF:' + ev_defense + 
+    '\nSPD:' + ev_speed + '\tSAT:' + ev_special_attack + '\tSDF:' + ev_special_defense)
 
-# write evs to asm
+    # write evs to asm
+    with open(stats_asm, 'a') as f:
+        f.write('\tevs  ' + ev_hp + ',   ' + ev_attack + ',   ' + ev_defense + ',   ' 
+        + ev_speed + ',   ' + ev_special_attack + ',   ' + ev_special_defense + '\n')
+        print('Wrote ev yields to ' + stats_asm)
+
 with open(stats_asm, 'a') as f:
-    f.write('\tevs  ' + ev_hp + ',   ' + ev_attack + ',   ' + ev_defense + ',   ' 
-    + ev_speed + ',   ' + ev_special_attack + ',   ' + ev_special_defense)
-    f.write('\n\t;   hp  atk  def  spd  sat  sdf\n\n')
-    print('Wrote ev yields to ' + stats_asm)
+    f.write('\t;   hp  atk  def  spd  sat  sdf\n\n')
 
 # types
 type1 = str(species.types[0].type).upper()
@@ -236,7 +261,11 @@ with open(stats_asm, 'a') as f:
     f.write('\tdb ' + gender_ratio + ' ; gender ratio\n')
     print('Wrote gender ratio to ' + stats_asm)
 
-# unknown 1 data (if user left filler data enabled)
+# unknown 1 data
+if(flag_no_filler_data == False):
+    with open(stats_asm, 'a') as f:
+        f.write('\tdb 100 ; unknown 1\n')
+        print('Wrote unknown 1 to ' + stats_asm)
 
 # step cycles to hatch
 step_cycles_to_hatch = str(species_data.hatch_counter)
@@ -246,17 +275,22 @@ with open(stats_asm, 'a') as f:
     f.write('\tdb ' + step_cycles_to_hatch + ' ; step cycles to hatch\n')
     print('Wrote step cycles to hatch to ' + stats_asm)
 
-# unknown 2 data (if user left filler data enabled)
+# unknown 2 data
+if(flag_no_filler_data == False):
+    with open(stats_asm, 'a') as f:
+        f.write('\tdb 5 ; unknown 2\n')
+        print('Wrote unknown 2 to ' + stats_asm)
 
 # incbin
 with open(stats_asm, 'a') as f:
     f.write('\tINCBIN "gfx/pokemon/' + name_as_filename + '/front.dimensions"\n')
     print('Wrote sprite dimensions to ' + stats_asm)
 
-# unused
-with open(stats_asm, 'a') as f:
-    f.write('\tdw NULL, NULL ; unused (beta front/back pics)\n')
-    print('Wrote unused data to ' + stats_asm)
+# beta pics
+if(flag_no_filler_pics == False):
+    with open(stats_asm, 'a') as f:
+        f.write('\tdw NULL, NULL ; unused (beta front/back pics)\n')
+        print('Wrote unused beta pics to ' + stats_asm)
 
 # growth rate
 growth_rates = { 'medium': 'GROWTH_MEDIUM_FAST', 'medium-slow': 'GROWTH_MEDIUM_SLOW', 'fast': 'GROWTH_FAST', 
