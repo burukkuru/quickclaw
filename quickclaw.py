@@ -6,6 +6,7 @@
 # implemented after main functionality is working
 
 import pokebase as pb
+import io
 import sys
 
 ### handle cli arguments ###
@@ -24,7 +25,7 @@ species_data = pb.pokemon_species(species_query)
 # returns line number of string in file
 # data - contents of file
 # s - search key
-def search_file(data, s):
+def search_file(data: list[str], s: str) -> int:
     line_num = 0
     for row in data:
         line_num += 1
@@ -37,7 +38,7 @@ def search_file(data, s):
 # data - contents of file
 # s_search - search key
 # s_insert - string to be inserted
-def insert_file(file, data, s_search, s_insert):
+def insert_file(file: io.TextIOWrapper, data: list[str], s_search: str, s_insert: str) -> None:
     line_num = search_file(data, s_search)
     data.insert(line_num-1, s_insert)
     file.seek(0)
@@ -50,16 +51,16 @@ def insert_file(file, data, s_search, s_insert):
 # s_end - search key marking end of range of file
 # offset - int marking where to begin parsing entry
 # until - str marking where to stop parsing entry
-def find_entries_in_range(data, list, s_begin, s_end, offset, until):
+def find_entries_in_range(data: list[str], l: list, s_begin: str, s_end: str, offset: int, until = ' ') -> None:
     begin = search_file(data, s_begin)
     end = search_file(data, s_end)
     for line in data[begin:end-1]:
         entry = line[offset:line.find(until, offset)]
-        list.append(entry)
+        l.append(entry)
 
 # returns a string converted to constant case
 # s - string to be converted
-def create_constant(s):
+def create_constant(s: str) -> str:
     temp_const = s.upper()
     constant = ''
     for c in temp_const:
@@ -68,6 +69,19 @@ def create_constant(s):
         constant += c
     return constant
 
+# returns a string after padded with filler data
+# s - the string to be padded
+# max - length of the return string
+# filler - data added to string
+# before - where filler will be placed: before if true, after if false
+def pad_string(s: str, max: int, filler = ' ', before = True) -> str:
+    if(len(s) < max):
+        for _ in range(max - len(s)):
+            if before:
+                s = filler + s
+            else:
+                s = s + filler
+    return s
 
 ### constant ###
 constant = create_constant(species_data.names[8].name)
@@ -81,8 +95,7 @@ with open('constants/pokemon_constants.asm', 'r+') as f:
 
 ### species name ###
 name = species_data.names[8].name
-for i in range(len(name), 10): # max length of species name
-    name += '@' # padding
+name = pad_string(name, 10, '@', False)
 name = '"' + name + '"'
 print('Created name: ' + name)
 
@@ -96,9 +109,8 @@ with open('data/pokemon/names.asm', 'r+') as f:
 # create base_stats/species.asm
 name_as_filename = constant.lower()
 stats_asm = 'data/pokemon/base_stats/' + name_as_filename + '.asm'
-f = open(stats_asm, 'x')
-print('Created file: ' + stats_asm)
-f.close()
+with open(stats_asm, 'x'):
+    print('Created file: ' + stats_asm)
 
 with open(stats_asm, 'a') as f:
     f.write('\tdb 0 ; species ID placeholder' + '\n\n')
@@ -120,19 +132,12 @@ speed           = str(species.stats[5].base_stat)
 print('Found stats: \tBST:' + base_stat_total + 
 '\nHP: ' + hp + '\tATK:' + attack + '\tDEF:' + defense + 
 '\nSPD:' + speed + '\tSAT:' + special_attack + '\tSDF:' + special_defense)
-# TODO: clean this up
-if(len(hp) == 2):
-    hp = ' ' + hp
-if(len(attack) == 2):
-    attack = ' ' + attack
-if(len(defense) == 2):
-    defense = ' ' + defense
-if(len(speed) == 2):
-    speed = ' ' + speed
-if(len(special_attack) == 2):
-    special_attack = ' ' + special_attack
-if(len(special_defense) == 2):
-    special_defense = ' ' + special_defense
+hp = pad_string(hp, 3)
+attack = pad_string(attack, 3)
+defense = pad_string(defense, 3)
+speed = pad_string(speed, 3)
+special_attack = pad_string(special_attack, 3)
+special_defense = pad_string(special_defense, 3)
 
 # write base stats to asm
 with open(stats_asm, 'a') as f:
@@ -286,12 +291,12 @@ tms = []
 with open('constants/item_constants.asm', 'r') as f:
     data = f.readlines()
     # tms
-    find_entries_in_range(data, tms, 'DEF TM01 EQU const_value', 'DEF NUM_TMS EQU __tmhm_value__ - 1', 8, ' ')
+    find_entries_in_range(data, tms, 'DEF TM01 EQU const_value', 'DEF NUM_TMS EQU __tmhm_value__ - 1', 8)
     # hms
-    find_entries_in_range(data, tms, 'DEF HM01 EQU const_value', 'DEF NUM_HMS EQU __tmhm_value__ - NUM_TMS - 1', 8, ' ')
+    find_entries_in_range(data, tms, 'DEF HM01 EQU const_value', 'DEF NUM_HMS EQU __tmhm_value__ - NUM_TMS - 1', 8)
     # tutor moves
-    find_entries_in_range(data, tms, 'DEF MT01 EQU const_value', 'DEF NUM_TUTORS = __tmhm_value__ - NUM_TMS - NUM_HMS - 1', 8, ' ')
-print('Found valid tms/hms/tutors defined in pokecrystal')
+    find_entries_in_range(data, tms, 'DEF MT01 EQU const_value', 'DEF NUM_TUTORS = __tmhm_value__ - NUM_TMS - NUM_HMS - 1', 8)
+    print('Found valid tms/hms/tutors defined in pokecrystal')
 
 # tm compatibility for this species
 tm_compat = []
@@ -321,5 +326,5 @@ with open('data/pokemon/base_stats.asm', 'r+') as f:
 pokecrystal_moves = []
 with open('constants/move_constants.asm', 'r') as f:
     data = f.readlines()
-    find_entries_in_range(data, pokecrystal_moves, 'const_def', 'DEF NUM_ATTACKS EQU const_value - 1', 7, ' ')
-print('Found all valid moves defined in pokecrystal')
+    find_entries_in_range(data, pokecrystal_moves, 'const_def', 'DEF NUM_ATTACKS EQU const_value - 1', 7)
+    print('Found all valid moves defined in pokecrystal')
