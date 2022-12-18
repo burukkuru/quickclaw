@@ -18,6 +18,12 @@ else:
 species = pb.pokemon(species_query)
 species_data = pb.pokemon_species(species_query)
 
+
+### functions ###
+
+# returns line number of string in file
+# data - contents of file
+# s - search key
 def search_file(data, s):
     line_num = 0
     for row in data:
@@ -26,7 +32,22 @@ def search_file(data, s):
             break
     return line_num
 
-### constant ###
+# appends entries gathered from a file to a list
+# data - contents of file
+# list - entries are appended to
+# s_begin - search key marking beginning of range of file
+# s_end - search key marking end of range of file
+# offset - int marking where to begin parsing entry
+# until - str marking where to stop parsing entry
+def find_entires_in_range(data, list, s_begin, s_end, offset, until):
+    begin = search_file(data, s_begin)
+    end = search_file(data, s_end)
+    for line in data[begin:end-1]:
+        entry = line[offset:line.find(until, offset)]
+        list.append(entry)
+
+# returns a string converted to constant case
+# s - string to be converted
 def create_constant(s):
     temp_const = s.upper()
     constant = ''
@@ -36,6 +57,8 @@ def create_constant(s):
         constant += c
     return constant
 
+
+### constant ###
 constant = create_constant(species_data.names[8].name)
 print('Created constant: ' + constant)
 
@@ -257,27 +280,12 @@ print('Found valid moves for species')
 tms = []
 with open('constants/item_constants.asm', 'r') as f:
     data = f.readlines()
-
     # tms
-    begin = search_file(data, 'DEF TM01 EQU const_value')
-    end = search_file(data, 'DEF NUM_TMS EQU __tmhm_value__ - 1')
-    for line in data[begin:end-1]:
-        tm_move = line[8:line.find(' ', 8)]
-        tms.append(tm_move)
-
+    find_entires_in_range(data, tms, 'DEF TM01 EQU const_value', 'DEF NUM_TMS EQU __tmhm_value__ - 1', 8, ' ')
     # hms
-    begin = search_file(data, 'DEF HM01 EQU const_value')
-    end = search_file(data, 'DEF NUM_HMS EQU __tmhm_value__ - NUM_TMS - 1')
-    for line in data[begin:end-1]:
-        tm_move = line[8:line.find(' ', 8)]
-        tms.append(tm_move)
-    
+    find_entires_in_range(data, tms, 'DEF HM01 EQU const_value', 'DEF NUM_HMS EQU __tmhm_value__ - NUM_TMS - 1', 8, ' ')
     # tutor moves
-    begin = search_file(data, 'DEF MT01 EQU const_value')
-    end = search_file(data, 'DEF NUM_TUTORS = __tmhm_value__ - NUM_TMS - NUM_HMS - 1')
-    for line in data[begin:end-1]:
-        tm_move = line[8:line.find(' ', 8)]
-        tms.append(tm_move)
+    find_entires_in_range(data, tms, 'DEF MT01 EQU const_value', 'DEF NUM_TUTORS = __tmhm_value__ - NUM_TMS - NUM_HMS - 1', 8, ' ')
 print('Found valid tms/hms/tutors defined in pokecrystal')
 
 # tm compatibility for this species
@@ -311,9 +319,5 @@ with open('data/pokemon/base_stats.asm', 'r+') as f:
 pokecrystal_moves = []
 with open('constants/move_constants.asm', 'r') as f:
     data = f.readlines()
-    begin = search_file(data, 'const_def')
-    end = search_file(data, 'DEF NUM_ATTACKS EQU const_value - 1')
-    for line in data[begin:end-1]:
-        pokecrystal_moves = line[8:line.find(' ', 7)]
-        tms.append(pokecrystal_moves)
+    find_entires_in_range(data, pokecrystal_moves, 'const_def', 'DEF NUM_ATTACKS EQU const_value - 1', 7, ' ')
 print('Found all valid moves defined in pokecrystal')
