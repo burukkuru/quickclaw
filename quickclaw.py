@@ -197,9 +197,12 @@ with open(stats_asm, 'a') as f:
     print('Wrote base exp to ' + stats_asm)
 
 # held items
-# TODO: check item constants pulled from pokebase against 
-# those in pokecrystal repo. display warning if there is no
-# matching item constant
+items = []
+with open('constants/item_constants.asm', 'r') as f:
+    data = f.readlines()
+    find_entries_in_range(data, items, 'const_def', 'DEF NUM_ITEMS EQU const_value - 1', 7)
+    print('Found valid items defined in pokecrystal')
+
 item_common = 'NO_ITEM'
 item_rare = 'NO_ITEM'
 for x in species.held_items:
@@ -211,6 +214,13 @@ for x in species.held_items:
     if x.version_details[0].rarity == 5:
         item_rare = create_constant(str(x.item))
 print('Found items: ' + item_common + ', ' + item_rare)
+
+if item_common not in items:
+    print('Warning: ' + item_common + ' is not defined in pokecrystal. Setting to NO_ITEM')
+    item_common = 'NO_ITEM'
+if item_rare not in items:
+    print('Warning: ' + item_rare + ' is not defined in pokecrystal. Setting to NO_ITEM')
+    item_rare = 'NO_ITEM'
 
 with open(stats_asm, 'a') as f:
     f.write('\tdb ' + item_common + ', ' + item_rare + ' ; items\n')
