@@ -39,7 +39,7 @@ def search_file(data, s):
 # s_end - search key marking end of range of file
 # offset - int marking where to begin parsing entry
 # until - str marking where to stop parsing entry
-def find_entires_in_range(data, list, s_begin, s_end, offset, until):
+def find_entries_in_range(data, list, s_begin, s_end, offset, until):
     begin = search_file(data, s_begin)
     end = search_file(data, s_end)
     for line in data[begin:end-1]:
@@ -281,11 +281,11 @@ tms = []
 with open('constants/item_constants.asm', 'r') as f:
     data = f.readlines()
     # tms
-    find_entires_in_range(data, tms, 'DEF TM01 EQU const_value', 'DEF NUM_TMS EQU __tmhm_value__ - 1', 8, ' ')
+    find_entries_in_range(data, tms, 'DEF TM01 EQU const_value', 'DEF NUM_TMS EQU __tmhm_value__ - 1', 8, ' ')
     # hms
-    find_entires_in_range(data, tms, 'DEF HM01 EQU const_value', 'DEF NUM_HMS EQU __tmhm_value__ - NUM_TMS - 1', 8, ' ')
+    find_entries_in_range(data, tms, 'DEF HM01 EQU const_value', 'DEF NUM_HMS EQU __tmhm_value__ - NUM_TMS - 1', 8, ' ')
     # tutor moves
-    find_entires_in_range(data, tms, 'DEF MT01 EQU const_value', 'DEF NUM_TUTORS = __tmhm_value__ - NUM_TMS - NUM_HMS - 1', 8, ' ')
+    find_entries_in_range(data, tms, 'DEF MT01 EQU const_value', 'DEF NUM_TUTORS = __tmhm_value__ - NUM_TMS - NUM_HMS - 1', 8, ' ')
 print('Found valid tms/hms/tutors defined in pokecrystal')
 
 # tm compatibility for this species
@@ -319,5 +319,5 @@ with open('data/pokemon/base_stats.asm', 'r+') as f:
 pokecrystal_moves = []
 with open('constants/move_constants.asm', 'r') as f:
     data = f.readlines()
-    find_entires_in_range(data, pokecrystal_moves, 'const_def', 'DEF NUM_ATTACKS EQU const_value - 1', 7, ' ')
+    find_entries_in_range(data, pokecrystal_moves, 'const_def', 'DEF NUM_ATTACKS EQU const_value - 1', 7, ' ')
 print('Found all valid moves defined in pokecrystal')
