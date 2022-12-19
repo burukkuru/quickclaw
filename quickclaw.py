@@ -367,6 +367,7 @@ with open('data/pokemon/base_stats.asm', 'r+') as f:
     print('Wrote base_stats asm path to data/pokemon/base_stats.asm')
 
 ### level-up learnset ###
+# TODO: handle evolutions
 # evos attack pointers
 name_as_variable_temp = constant.title()
 name_as_variable = ''
@@ -384,3 +385,19 @@ with open('constants/move_constants.asm', 'r') as f:
     data = f.readlines()
     find_entries_in_range(data, pokecrystal_moves, 'const_def', 'DEF NUM_ATTACKS EQU const_value - 1', 7)
     print('Found all valid moves defined in pokecrystal')
+
+with open('data/pokemon/evos_attacks.asm', 'a') as f:
+    f.write('\n' + name_as_variable + 'EvosAttacks:\n')
+    f.write('\tdb 0 ; no more evolutions\n')
+    first_move = ''
+    for lvl, move in moves:
+        if lvl == 1:
+            first_move = move
+            break
+    for lvl, move in moves[moves.index((1, first_move)):]:
+        if move in pokecrystal_moves:
+            f.write('\tdb ' + str(lvl) + ', ' + move + '\n')
+        else:
+            f.write('\t; db ' + str(lvl) + ', ' + move + '\n')
+    f.write('\tdb 0 ; no more level-up moves\n')
+    print('Wrote level-up learnset and evolution to data/pokemon/evos_attacks.asm')
