@@ -392,6 +392,7 @@ while(evo_chain.species.id != species.id):
     for i in range(len(evo_chain.evolves_to)):
         if(evo_chain.evolves_to[i].species.id == species.id):
             evo_chain = evo_chain.evolves_to[i]
+    evo_chain = evo_chain.evolves_to[0]
 evolutions_s = ''
 # append to evolutions_s with line according to evolution method
 for i in range(len(evo_chain.evolves_to)):
@@ -420,7 +421,11 @@ for i in range(len(evo_chain.evolves_to)):
         if held_item == 'NONE':
             evolutions_s += '\tdb EVOLVE_TRADE, -1, ' + species + '\n'
         else:
-            evolutions_s += '\tdb EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
+            if held_item not in pokecrystal_items:
+                print('Warning: ' + held_item + ' is not defined in pokecrystal. Disabling evolution ' + species)
+                evolutions_s += '\t; db EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
+            else:
+                evolutions_s += '\tdb EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
     # undefined
     else:
         evolutions_s += '\t; evolution method not found for : ' + species + '\n'
