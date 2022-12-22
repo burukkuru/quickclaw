@@ -222,10 +222,10 @@ with open(stats_asm, 'a') as f:
     print('Wrote base exp to ' + stats_asm)
 
 # held items
-items = []
+pokecrystal_items = []
 with open('constants/item_constants.asm', 'r') as f:
     data = f.readlines()
-    find_entries_in_range(data, items, 'const_def', 'DEF NUM_ITEMS EQU const_value - 1', 7)
+    find_entries_in_range(data, pokecrystal_items, 'const_def', 'DEF NUM_ITEMS EQU const_value - 1', 7)
     print('Found valid items defined in pokecrystal')
 
 item_common = 'NO_ITEM'
@@ -240,10 +240,10 @@ for x in species.held_items:
         item_rare = create_constant(str(x.item))
 print('Found items: ' + item_common + ', ' + item_rare)
 
-if item_common not in items:
+if item_common not in pokecrystal_items:
     print('Warning: ' + item_common + ' is not defined in pokecrystal. Setting to NO_ITEM')
     item_common = 'NO_ITEM'
-if item_rare not in items:
+if item_rare not in pokecrystal_items:
     print('Warning: ' + item_rare + ' is not defined in pokecrystal. Setting to NO_ITEM')
     item_rare = 'NO_ITEM'
 
@@ -392,7 +392,6 @@ while(evo_chain.species.id != species.id):
     for i in range(len(evo_chain.evolves_to)):
         if(evo_chain.evolves_to[i].species.id == species.id):
             evo_chain = evo_chain.evolves_to[i]
-    evo_chain = evo_chain.evolves_to[0]
 evolutions_s = ''
 # append to evolutions_s with line according to evolution method
 for i in range(len(evo_chain.evolves_to)):
@@ -410,7 +409,7 @@ for i in range(len(evo_chain.evolves_to)):
     # item
     elif(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'use-item'):
         item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].item))
-        if item not in items:
+        if item not in pokecrystal_items:
             print('Warning: ' + item + ' is not defined in pokecrystal. Disabling evolution ' + species)
             evolutions_s += '\t; db EVOLVE_ITEM, ' + item + ', ' + species + '\n'
         else:
