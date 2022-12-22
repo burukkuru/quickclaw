@@ -398,17 +398,34 @@ evolutions_s = ''
 for i in range(len(evo_chain.evolves_to)):
     species = create_constant(evo_chain.evolves_to[i].species.names[8].name)
     if(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'level-up'):
-        lvl = evo_chain.evolves_to[i].evolution_details[0].min_level
-        evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + species + '\n'
-    if(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'use-item'):
+        # happiness
+        if(evo_chain.evolves_to[i].evolution_details[0].min_happiness != None):
+            time_of_day_dict = {'' : 'TR_ANYTIME', 'day' : 'TR_MORNDAY', 'night' : 'TR_NIGHT'}
+            time_of_day = str(evo_chain.evolves_to[i].evolution_details[0].time_of_day)
+            evolutions_s += '\tdb EVOLVE_HAPPINESS, ' + time_of_day_dict[time_of_day] + ', ' + species + '\n'
+        # simple level-up
+        else:
+            lvl = evo_chain.evolves_to[i].evolution_details[0].min_level
+            evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + species + '\n'
+    # item
+    elif(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'use-item'):
         item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].item))
-        evolutions_s += '\tdb EVOLVE_ITEM, ' + item + ', ' + species + '\n'
-    if(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'trade'):
+        if item not in items:
+            print('Warning: ' + item + ' is not defined in pokecrystal. Disabling evolution ' + species)
+            evolutions_s += '\t; db EVOLVE_ITEM, ' + item + ', ' + species + '\n'
+        else:
+            evolutions_s += '\tdb EVOLVE_ITEM, ' + item + ', ' + species + '\n'
+    # trade
+    elif(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'trade'):
         held_item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].held_item))
         if held_item == 'NONE':
             evolutions_s += '\tdb EVOLVE_TRADE, -1, ' + species + '\n'
         else:
             evolutions_s += '\tdb EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
+    # undefined
+    else:
+        evolutions_s += '\t; evolution method not found for : ' + species + '\n'
+    print('Found evolution: ' + species)
 
 with open('data/pokemon/evos_attacks.asm', 'a') as f:
     f.write('\n' + name_as_variable + 'EvosAttacks:\n')
