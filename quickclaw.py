@@ -127,7 +127,7 @@ with open('data/pokemon/names.asm', 'r+') as f:
 # create base_stats/species.asm
 name_as_filename = constant.lower()
 stats_asm = 'data/pokemon/base_stats/' + name_as_filename + '.asm'
-with open(stats_asm, 'x'):
+with open(stats_asm, 'w+'):
     print('Created file: ' + stats_asm)
 
 with open(stats_asm, 'a') as f:
@@ -367,7 +367,6 @@ with open('data/pokemon/base_stats.asm', 'r+') as f:
     print('Wrote base_stats asm path to data/pokemon/base_stats.asm')
 
 ### level-up learnset ###
-# TODO: handle evolutions
 # evos attack pointers
 name_as_variable_temp = constant.title()
 name_as_variable = ''
@@ -386,8 +385,34 @@ with open('constants/move_constants.asm', 'r') as f:
     find_entries_in_range(data, pokecrystal_moves, 'const_def', 'DEF NUM_ATTACKS EQU const_value - 1', 7)
     print('Found all valid moves defined in pokecrystal')
 
+# handle evolutions
+evo_chain = species_data.evolution_chain.chain
+# iterate through evo_chain until species id matches
+while(evo_chain.species.id != species.id):
+    for i in range(len(evo_chain.evolves_to)):
+        if(evo_chain.evolves_to[i].species.id == species.id):
+            evo_chain = evo_chain.evolves_to[i]
+    evo_chain = evo_chain.evolves_to[0]
+evolutions_s = ''
+# append to evolutions_s with line according to evolution method
+for i in range(len(evo_chain.evolves_to)):
+    species = create_constant(evo_chain.evolves_to[i].species.names[8].name)
+    if(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'level-up'):
+        lvl = evo_chain.evolves_to[i].evolution_details[0].min_level
+        evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + species + '\n'
+    if(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'use-item'):
+        item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].item))
+        evolutions_s += '\tdb EVOLVE_ITEM, ' + item + ', ' + species + '\n'
+    if(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'trade'):
+        held_item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].held_item))
+        if held_item == 'NONE':
+            evolutions_s += '\tdb EVOLVE_TRADE, -1, ' + species + '\n'
+        else:
+            evolutions_s += '\tdb EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
+
 with open('data/pokemon/evos_attacks.asm', 'a') as f:
     f.write('\n' + name_as_variable + 'EvosAttacks:\n')
+    f.write(evolutions_s)
     f.write('\tdb 0 ; no more evolutions\n')
     first_move = ''
     for lvl, move in moves:
