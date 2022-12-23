@@ -67,6 +67,21 @@ def pad_string(s: str, max: int, filler = ' ', before = True) -> str:
                 s = s + filler
     return s
 
+# returns evolution chain of species matching key
+# root - evolution chain object
+# key - id of species to search for
+def evolution_tree_bfs(root, key: int):
+    q = []
+    if root.species.id == key:
+        return root
+    q.append(root)
+    while(len(q) != 0):
+        v = q.pop(0)
+        if v.species.id == key:
+            return v
+        for e in v.evolves_to:
+            q.append(e)
+
 ### handle cli arguments ###
 if (len(sys.argv) > 1):
     species_query = sys.argv[1]
@@ -351,12 +366,13 @@ print('Created tm compatibility for species')
 
 with open(stats_asm, 'a') as f:
     f.write('\t; tm/hm learnset\n\ttmhm ')
-    last_item = tm_compat[-1]
-    for move in tm_compat:
-        if move == last_item:
-            f.write(move)
-        else:
-            f.write(move + ', ')
+    if(len(tm_compat) != 0):
+        last_item = tm_compat[-1]
+        for move in tm_compat:
+            if move == last_item:
+                f.write(move)
+            else:
+                f.write(move + ', ')
     f.write('\n\t; end\n')
     print('Wrote tm compatibility to ' + stats_asm)
 
@@ -386,18 +402,13 @@ with open('constants/move_constants.asm', 'r') as f:
     print('Found all valid moves defined in pokecrystal')
 
 # handle evolutions
-evo_chain = species_data.evolution_chain.chain
-# iterate through evo_chain until species id matches
-while(evo_chain.species.id != species.id):
-    for i in range(len(evo_chain.evolves_to)):
-        if(evo_chain.evolves_to[i].species.id == species.id):
-            evo_chain = evo_chain.evolves_to[i]
-    evo_chain = evo_chain.evolves_to[0]
+evo_chain = evolution_tree_bfs(species_data.evolution_chain.chain, species.id)
 evolutions_s = ''
 # append to evolutions_s with line according to evolution method
 for i in range(len(evo_chain.evolves_to)):
+    evo_trigger = evo_chain.evolves_to[i].evolution_details[0].trigger.name
     species = create_constant(evo_chain.evolves_to[i].species.names[8].name)
-    if(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'level-up'):
+    if(evo_trigger == 'level-up'):
         # happiness
         if(evo_chain.evolves_to[i].evolution_details[0].min_happiness != None):
             time_of_day_dict = {'' : 'TR_ANYTIME', 'day' : 'TR_MORNDAY', 'night' : 'TR_NIGHT'}
@@ -408,7 +419,7 @@ for i in range(len(evo_chain.evolves_to)):
             lvl = evo_chain.evolves_to[i].evolution_details[0].min_level
             evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + species + '\n'
     # item
-    elif(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'use-item'):
+    elif(evo_trigger == 'use-item'):
         item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].item))
         if item not in pokecrystal_items:
             print('Warning: ' + item + ' is not defined in pokecrystal. Disabling evolution ' + species)
@@ -416,7 +427,7 @@ for i in range(len(evo_chain.evolves_to)):
         else:
             evolutions_s += '\tdb EVOLVE_ITEM, ' + item + ', ' + species + '\n'
     # trade
-    elif(evo_chain.evolves_to[i].evolution_details[0].trigger.name == 'trade'):
+    elif(evo_trigger == 'trade'):
         held_item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].held_item))
         if held_item == 'NONE':
             evolutions_s += '\tdb EVOLVE_TRADE, -1, ' + species + '\n'
