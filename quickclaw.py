@@ -417,7 +417,11 @@ for i in range(len(evo_chain.evolves_to)):
         # simple level-up
         else:
             lvl = evo_chain.evolves_to[i].evolution_details[0].min_level
-            evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + species + '\n'
+            if lvl == None:
+                print('Warning: min_level not set. Disabling evolution ' + species)
+                evolutions_s += '\t; evolution method not found for : ' + species + '\n'
+            else:
+                evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + species + '\n'
     # item
     elif(evo_trigger == 'use-item'):
         item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].item))
@@ -439,6 +443,7 @@ for i in range(len(evo_chain.evolves_to)):
                 evolutions_s += '\tdb EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
     # undefined
     else:
+        print('Warning: No evolution method found. Disabling evolution ' + species)
         evolutions_s += '\t; evolution method not found for : ' + species + '\n'
     print('Found evolution: ' + species)
 
