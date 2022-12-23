@@ -246,12 +246,12 @@ with open('constants/item_constants.asm', 'r') as f:
 item_common = 'NO_ITEM'
 item_rare = 'NO_ITEM'
 for x in species.held_items:
-    if x.version_details[0].rarity == 100:
+    if x.version_details[-1].rarity == 100:
         item_common = create_constant(str(x.item))
         item_rare = item_common
-    if x.version_details[0].rarity == 50:
+    if x.version_details[-1].rarity == 50:
         item_common = create_constant(str(x.item))
-    if x.version_details[0].rarity == 5:
+    if x.version_details[-1].rarity == 5:
         item_rare = create_constant(str(x.item))
 print('Found items: ' + item_common + ', ' + item_rare)
 
@@ -337,7 +337,7 @@ with open(stats_asm, 'a') as f:
 # create list of moves
 moves = []
 for x in species.moves:
-    lvl = x.version_group_details[0].level_learned_at
+    lvl = x.version_group_details[-1].level_learned_at
     move = create_constant(str(x.move))
     if move == 'PSYCHIC':
         move = 'PSYCHIC_M'
@@ -407,45 +407,45 @@ evolutions_s = ''
 # append to evolutions_s with line according to evolution method
 for i in range(len(evo_chain.evolves_to)):
     evo_trigger = evo_chain.evolves_to[i].evolution_details[0].trigger.name
-    species = create_constant(evo_chain.evolves_to[i].species.names[8].name)
+    evo_species = create_constant(evo_chain.evolves_to[i].species.names[8].name)
     if(evo_trigger == 'level-up'):
         # happiness
         if(evo_chain.evolves_to[i].evolution_details[0].min_happiness != None):
             time_of_day_dict = {'' : 'TR_ANYTIME', 'day' : 'TR_MORNDAY', 'night' : 'TR_NIGHT'}
             time_of_day = str(evo_chain.evolves_to[i].evolution_details[0].time_of_day)
-            evolutions_s += '\tdb EVOLVE_HAPPINESS, ' + time_of_day_dict[time_of_day] + ', ' + species + '\n'
+            evolutions_s += '\tdb EVOLVE_HAPPINESS, ' + time_of_day_dict[time_of_day] + ', ' + evo_species + '\n'
         # simple level-up
         else:
             lvl = evo_chain.evolves_to[i].evolution_details[0].min_level
             if lvl == None:
-                print('Warning: min_level not set. Disabling evolution ' + species)
-                evolutions_s += '\t; evolution method not found for : ' + species + '\n'
+                print('Warning: min_level not set. Disabling evolution ' + evo_species)
+                evolutions_s += '\t; evolution method not found for : ' + evo_species + '\n'
             else:
-                evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + species + '\n'
+                evolutions_s += '\tdb EVOLVE_LEVEL, ' + str(lvl) + ', ' + evo_species + '\n'
     # item
     elif(evo_trigger == 'use-item'):
         item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].item))
         if item not in pokecrystal_items:
-            print('Warning: ' + item + ' is not defined in pokecrystal. Disabling evolution ' + species)
-            evolutions_s += '\t; db EVOLVE_ITEM, ' + item + ', ' + species + '\n'
+            print('Warning: ' + item + ' is not defined in pokecrystal. Disabling evolution ' + evo_species)
+            evolutions_s += '\t; db EVOLVE_ITEM, ' + item + ', ' + evo_species + '\n'
         else:
-            evolutions_s += '\tdb EVOLVE_ITEM, ' + item + ', ' + species + '\n'
+            evolutions_s += '\tdb EVOLVE_ITEM, ' + item + ', ' + evo_species + '\n'
     # trade
     elif(evo_trigger == 'trade'):
         held_item = create_constant(str(evo_chain.evolves_to[i].evolution_details[0].held_item))
         if held_item == 'NONE':
-            evolutions_s += '\tdb EVOLVE_TRADE, -1, ' + species + '\n'
+            evolutions_s += '\tdb EVOLVE_TRADE, -1, ' + evo_species + '\n'
         else:
             if held_item not in pokecrystal_items:
                 print('Warning: ' + held_item + ' is not defined in pokecrystal. Disabling evolution ' + species)
-                evolutions_s += '\t; db EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
+                evolutions_s += '\t; db EVOLVE_TRADE, ' + held_item + ', ' + evo_species + '\n'
             else:
-                evolutions_s += '\tdb EVOLVE_TRADE, ' + held_item + ', ' + species + '\n'
+                evolutions_s += '\tdb EVOLVE_TRADE, ' + held_item + ', ' + evo_species + '\n'
     # undefined
     else:
-        print('Warning: No evolution method found. Disabling evolution ' + species)
-        evolutions_s += '\t; evolution method not found for : ' + species + '\n'
-    print('Found evolution: ' + species)
+        print('Warning: No evolution method found. Disabling evolution ' + evo_species)
+        evolutions_s += '\t; evolution method not found for : ' + evo_species + '\n'
+    print('Found evolution: ' + evo_species)
 
 with open('data/pokemon/evos_attacks.asm', 'a') as f:
     f.write('\n' + name_as_variable + 'EvosAttacks:\n')
@@ -463,3 +463,13 @@ with open('data/pokemon/evos_attacks.asm', 'a') as f:
             f.write('\t; db ' + str(lvl) + ', ' + move + '\n')
     f.write('\tdb 0 ; no more level-up moves\n')
     print('Wrote level-up learnset and evolution to data/pokemon/evos_attacks.asm')
+
+### level-up learnset ###
+# egg move pointers
+with open('data/pokemon/egg_move_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    if(species_data.evolution_chain.chain.species.id == species.id): # if species is beginning of evolution chain
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw ' + name_as_variable + 'EggMoves\n')
+    else:
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw NoEggMoves\n')
+    print('Wrote egg move pointer to data/pokemon/egg_move_pointers.asm')
