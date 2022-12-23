@@ -496,3 +496,15 @@ if(species_data.evolution_chain.chain.species.id == species.id):
         print('Wrote egg moves to data/pokemon/egg_moves.asm')
 else:
     print('Species has no egg moves')
+
+### cry ###
+with open('data/pokemon/cries.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tmon_cry CRY_NIDORAN_M,     0,    0 ; ' + constant + '\n')
+    print('Wrote cry placeholder to data/pokemon/cries.asm')
+
+### icon ###
+with open('data/pokemon/menu_icons.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ICON_BULBASAUR   ; ' + constant + '\n')
+    print('Wrote icon placeholder to data/pokemon/menu_icons.asm')
