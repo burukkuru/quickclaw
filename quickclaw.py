@@ -102,6 +102,7 @@ flag_decap = False
 flag_pc16 = False
 flag_no_filler_data = False
 flag_no_filler_pics = False
+flag_unique_icons = False
 
 if '-evs' in args:
     flag_evs = True
@@ -113,6 +114,8 @@ if '-nofillerdata' in args:
     flag_no_filler_data = True
 if '-nofillerpics' in args:
     flag_no_filler_pics = True
+if '-uniqueicons' in args:
+    flag_unique_icons = True
 
 ### constant ###
 constant = create_constant(species_data.names[8].name)
@@ -504,7 +507,18 @@ with open('data/pokemon/cries.asm', 'r+') as f:
     print('Wrote cry placeholder to data/pokemon/cries.asm')
 
 ### icon ###
+if(flag_unique_icons):
+    # create icon constant
+    with open('constants/icon_constants.asm', 'r+') as f:
+        data = f.readlines()
+        insert_file(f, data, 'DEF NUM_ICONS EQU const_value - 1', '\tconst ICON_' + constant + '\n')
+        print('Wrote new icon constant to constants/icon_constants.asm')
+
 with open('data/pokemon/menu_icons.asm', 'r+') as f:
     data = f.readlines()
-    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ICON_BULBASAUR   ; ' + constant + '\n')
-    print('Wrote icon placeholder to data/pokemon/menu_icons.asm')
+    if(flag_unique_icons):
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ICON_' + constant + '\n')
+        print('Wrote icon to data/pokemon/menu_icons.asm')
+    else:
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ICON_BULBASAUR   ; ' + constant + '\n')
+        print('Wrote icon placeholder to data/pokemon/menu_icons.asm')
