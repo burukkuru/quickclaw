@@ -340,7 +340,11 @@ with open(stats_asm, 'a') as f:
 # create list of moves
 moves = []
 for x in species.moves:
-    lvl = x.version_group_details[-1].level_learned_at
+    lvl = 0
+    for i in range(len(x.version_group_details)):
+        lvl = x.version_group_details[-(1+i)].level_learned_at
+        if(lvl != 0):
+            break
     move = create_constant(str(x.move))
     if move == 'PSYCHIC':
         move = 'PSYCHIC_M'
@@ -481,8 +485,10 @@ if(species_data.evolution_chain.chain.species.id == species.id):
     # create list of egg moves
     egg_moves = []
     for x in species.moves:
-        if x.version_group_details[-1].move_learn_method.name == 'egg':
-            egg_moves.append(create_constant(x.move.name))
+        for i in range(len(x.version_group_details)):
+            if x.version_group_details[-(1+i)].move_learn_method.name == 'egg':
+                egg_moves.append(create_constant(x.move.name))
+                break
     print('Found list of egg moves')
     
     # write egg moves to asm
