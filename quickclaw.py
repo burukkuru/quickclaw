@@ -464,7 +464,7 @@ with open('data/pokemon/evos_attacks.asm', 'a') as f:
     f.write('\tdb 0 ; no more level-up moves\n')
     print('Wrote level-up learnset and evolution to data/pokemon/evos_attacks.asm')
 
-### level-up learnset ###
+### egg moves ###
 # egg move pointers
 with open('data/pokemon/egg_move_pointers.asm', 'r+') as f:
     data = f.readlines()
@@ -473,3 +473,26 @@ with open('data/pokemon/egg_move_pointers.asm', 'r+') as f:
     else:
         insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw NoEggMoves\n')
     print('Wrote egg move pointer to data/pokemon/egg_move_pointers.asm')
+
+if(species_data.evolution_chain.chain.species.id == species.id):
+    # create list of egg moves
+    egg_moves = []
+    for x in species.moves:
+        if x.version_group_details[-1].move_learn_method.name == 'egg':
+            egg_moves.append(create_constant(x.move.name))
+    print('Found list of egg moves')
+    
+    # write egg moves to asm
+    with open('data/pokemon/egg_moves.asm', 'r+') as f:
+        data = f.readlines()
+        egg_moves_s = name_as_variable + 'EggMoves\n'
+        for move in egg_moves:
+            if move in pokecrystal_moves:
+                egg_moves_s += '\tdb ' + move + '\n'
+            else:
+                egg_moves_s += '\t; db ' + move + '\n'
+        egg_moves_s += '\tdb -1 ; end\n\n'
+        insert_file(f, data, 'NoEggMoves:', egg_moves_s)
+        print('Wrote egg moves to data/pokemon/egg_moves.asm')
+else:
+    print('Species has no egg moves')
