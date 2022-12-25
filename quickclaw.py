@@ -559,3 +559,11 @@ weight_kg = species.weight / 10 # convert hectograms to kilograms
 weight_lb = weight_kg * 2.20462262 # convert kilograms to pounds
 weight = str(round(weight_lb * 10))
 print('Converted weight: ' + weight)
+
+# TODO: dex entry contents
+
+with open(dex_entry_asm, 'a') as f:
+    f.write('\tdb ' + genus + ' ; species name\n')
+    f.write('\tdw ' + height + ', ' + weight + ' ; height, weight\n\n')
+    # TODO: write dex entry contents
+    print('Wrote dex entry to ' + dex_entry_asm)
