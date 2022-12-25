@@ -528,3 +528,34 @@ with open('data/pokemon/menu_icons.asm', 'r+') as f:
     else:
         insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ICON_BULBASAUR   ; ' + constant + '\n')
         print('Wrote icon placeholder to data/pokemon/menu_icons.asm')
+
+### pokedex entry ###
+# create dex entry asm
+dex_entry_asm = 'data/pokemon/dex_entries/' + name_as_filename + '.asm'
+with open(dex_entry_asm, 'w+'):
+    print('Created file: ' + dex_entry_asm)
+
+# create genus name
+genus = species_data.genera[7].genus
+genus = genus[0:genus.find(' Pokémon')] # truncate ending
+genus = genus.upper()
+genus = genus[:11] # max limit
+genus = genus + '@' # padding
+genus = '"' + genus + '"'
+print('Created genus name: ' + genus)
+
+# create height
+height_cm = species.height * 10 # convert decimeters to centimeters
+height_inches = round(height_cm * 0.393701) # convert centimeters to inches
+height_feet = str(int(height_inches / 12))
+height_remainder = str(height_inches % 12)
+if len(height_remainder) == 1:
+    height_remainder = '0' + height_remainder
+height = height_feet + height_remainder
+print('Converted height: ' + height)
+
+# create weight
+weight_kg = species.weight / 10 # convert hectograms to kilograms
+weight_lb = weight_kg * 2.20462262 # convert kilograms to pounds
+weight = str(round(weight_lb * 10))
+print('Converted weight: ' + weight)
