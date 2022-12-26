@@ -6,6 +6,7 @@ requires [pokebase](https://pypi.org/project/pokebase/)
 * cannot generate cries, outside scope of project
 * menu icons must be manually assigned
 * species graphics (including footprint) must be added manually
+* sprites must be placed into gfx/pics.asm sprite banks manually
 
 ## Usage
 python3 quickclaw.py {species name} {parameters listed below}
