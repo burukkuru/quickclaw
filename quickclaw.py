@@ -104,6 +104,7 @@ flag_no_filler_data = False
 flag_no_filler_pics = False
 flag_unique_icons = False
 flag_fix_footprints = False
+flag_fix_dba_pic = False
 
 if '-evs' in args:
     flag_evs = True
@@ -119,6 +120,8 @@ if '-uniqueicons' in args:
     flag_unique_icons = True
 if '-fixfootprints' in args:
     flag_fix_footprints = True
+if '-fixdbapic' in args:
+    flag_fix_dba_pic = True
 
 ### constant ###
 constant = create_constant(species_data.names[8].name)
@@ -639,3 +642,73 @@ with open('gfx/footprints.asm', 'r+') as f:
         insert_file(f, data, 'assert_table_length $100', 'INCBIN "gfx/footprints/' + name_as_filename + '.1bpp", footprint_top\n'
         + 'INCBIN "gfx/footprints/' + name_as_filename + '.1bpp", footprint_bottom\n')
     print('Wrote footprint path to gfx/footprints.asm')
+
+### sprite and animation pointers ###
+with open('data/pokemon/pic_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    if flag_fix_dba_pic:
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdba ' + name_as_variable + 'Frontpic\n')
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdba ' + name_as_variable + 'Backpic\n')
+    else:
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdba_pic ' + name_as_variable + 'Frontpic\n')
+        insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdba_pic ' + name_as_variable + 'Backpic\n')
+    print('Wrote pic pointers to data/pokemon/pic_pointers.asm')
+
+with open('gfx/pics.asm', 'a') as f:
+    f.write('; ' + name_as_variable + 'Frontpic: INCBIN "gfx/pokemon/' + name_as_filename + '/front.animated.2bpp.lz"\n')
+    f.write('; ' + name_as_variable + 'Backpic: INCBIN "gfx/pokemon/' + name_as_filename + '/back.2bpp.lz"\n')
+    print('Wrote pic path to gfx/pics.asm')
+
+with open('data/pokemon/palettes.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', 'INCBIN "gfx/pokemon/' + name_as_filename + '/front.gbcpal", middle_colors\n' 
+    + 'INCLUDE "gfx/pokemon/' + name_as_filename + '/shiny.pal"\n')
+    print('Wrote palette pointers to data/pokemon/palettes.asm')
+
+with open('gfx/pokemon/anim_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw ' + name_as_variable + 'Animation\n')
+    print('Wrote anim pointers to gfx/pokemon/anim_pointers.asm')
+
+with open('gfx/pokemon/anims.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'EggAnimation', name_as_variable + 'Animation: INCLUDE "gfx/pokemon/' + name_as_filename + '/anim.asm"\n')
+    print('Wrote anim path to gfx/pokemon/anims.asm')
+
+with open('gfx/pokemon/idle_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw ' + name_as_variable + 'AnimationIdle\n')
+    print('Wrote idle pointer to gfx/pokemon/idle_pointers.asm')
+
+with open('gfx/pokemon/idles.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'EggAnimationIdle', name_as_variable + 'AnimationIdle: INCLUDE "gfx/pokemon/' + name_as_filename + '/anim_idle.asm"\n')
+    print('Wrote idle path to gfx/pokemon/idles.asm')
+
+with open('gfx/pokemon/bitmask_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw ' + name_as_variable + 'Bitmasks\n')
+    print('Wrote bitmask pointer to gfx/pokemon/bitmask_pointers.asm')
+
+with open('gfx/pokemon/bitmasks.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'EggBitmasks', name_as_variable + 'Bitmasks: INCLUDE "gfx/pokemon/' + name_as_filename + '/bitmask.asm"\n')
+    print('Wrote bitmask path to gfx/pokemon/bitmasks.asm')
+
+with open('gfx/pokemon/frame_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw ' + name_as_variable + 'Frames\n')
+    print('Wrote frame pointer to gfx/pokemon/frame_pointers.asm')
+
+with open('gfx/pokemon/johto_frames.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'EggFrames', name_as_variable + 'Frames: INCLUDE "gfx/pokemon/' + name_as_filename + '/frames.asm"\n')
+    print('Wrote frame path to gfx/pokemon/johto_frames.asm')
+
+### more data-related tables ###
+with open('data/pokemon/gen1_order.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ' + constant + '\n')
+    print('Wrote gen1 order to data/pokemon/gen1_order.asm')
+
+print('Done')
