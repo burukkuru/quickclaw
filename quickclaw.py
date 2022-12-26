@@ -214,6 +214,12 @@ with open(stats_asm, 'a') as f:
     f.write('\t;   hp  atk  def  spd  sat  sdf\n\n')
 
 # types
+pokecrystal_types = []
+with open('constants/type_constants.asm', 'r') as f:
+    data = f.readlines()
+    find_entries_in_range(data, pokecrystal_types, 'const_def', 'DEF TYPES_END EQU const_value', 7, '\n')
+    print('Found all valid types defined in pokecrystal')
+
 type1 = str(species.types[0].type).upper()
 if len(species.types) == 1: # if species only has 1 type
     type2 = type1 # duplicate primary type
@@ -223,6 +229,12 @@ if type1 == 'PSYCHIC':
     type1 = 'PSYCHIC_TYPE'
 if type2 == 'PSYCHIC':
     type2 = 'PSYCHIC_TYPE'
+if type1 not in pokecrystal_types:
+    print('Warning: ' + type1 + ' is not defined in pokecrystal. Setting to NORMAL')
+    type1 = 'NORMAL'
+if type2 not in pokecrystal_types:
+    print('Warning: ' + type2 + ' is not defined in pokecrystal. Setting to NORMAL')
+    type2 = 'NORMAL'
 print('Found types: ' + type1 + ', ' + type2)
 
 with open(stats_asm, 'a') as f:
@@ -317,10 +329,19 @@ if(flag_no_filler_pics == False):
         print('Wrote unused beta pics to ' + stats_asm)
 
 # growth rate
+pokecrystal_growth_rates = []
+with open('constants/pokemon_data_constants.asm', 'r') as f:
+    data = f.readlines()
+    find_entries_in_range(data, pokecrystal_growth_rates, 'wBaseGrowthRate', 'DEF NUM_GROWTH_RATES EQU const_value', 7, '\n')
+    print('Found all valid growth rates defined in pokecrystal')
+
 growth_rates = { 'medium': 'GROWTH_MEDIUM_FAST', 'medium-slow': 'GROWTH_MEDIUM_SLOW', 'fast': 'GROWTH_FAST', 
 'slow': "GROWTH_SLOW", 'slow-then-very-fast': 'GROWTH_ERRATIC', 'fast-then-very-slow': 'GROWTH_FLUCTUATING' }
 growth_rate = growth_rates[str(species_data.growth_rate)]
 print('Found growth rate: ' + growth_rate)
+if growth_rate not in pokecrystal_growth_rates:
+    print('Warning: ' + growth_rate + ' is not defined in pokecrystal. Setting to NORMAL')
+    growth_rate = 'GROWTH_MEDIUM_FAST'
 
 with open(stats_asm, 'a') as f:
     f.write('\tdb ' + growth_rate + ' ; growth rate\n')
