@@ -103,6 +103,7 @@ flag_pc16 = False
 flag_no_filler_data = False
 flag_no_filler_pics = False
 flag_unique_icons = False
+flag_fix_footprints = False
 
 if '-evs' in args:
     flag_evs = True
@@ -116,6 +117,8 @@ if '-nofillerpics' in args:
     flag_no_filler_pics = True
 if '-uniqueicons' in args:
     flag_unique_icons = True
+if '-fixfootprints' in args:
+    flag_fix_footprints = True
 
 ### constant ###
 constant = create_constant(species_data.names[8].name)
@@ -626,3 +629,13 @@ with open('data/pokemon/dex_order_alpha.asm', 'r+') as f:
             break
     insert_file(f, data, name, '\tdb ' + constant + '\n')
     print('Wrote dex order alpha to data/pokemon/dex_order_alpha.asm')
+
+### footprint ###
+with open('gfx/footprints.asm', 'r+') as f:
+    data = f.readlines()
+    if flag_fix_footprints:
+        insert_file(f, data, 'assert_table_length $100', 'INCBIN "gfx/footprints/' + name_as_filename + '.1bpp"\n')
+    else:
+        insert_file(f, data, 'assert_table_length $100', 'INCBIN "gfx/footprints/' + name_as_filename + '.1bpp", footprint_top\n'
+        + 'INCBIN "gfx/footprints/' + name_as_filename + '.1bpp", footprint_bottom\n')
+    print('Wrote footprint path to gfx/footprints.asm')
