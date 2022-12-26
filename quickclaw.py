@@ -560,10 +560,41 @@ weight_lb = weight_kg * 2.20462262 # convert kilograms to pounds
 weight = str(round(weight_lb * 10))
 print('Converted weight: ' + weight)
 
-# TODO: dex entry contents
+# parse words from shortest flavor_tex_entry
+min_len = sys.maxsize
+min_index = 0
+for i in range(len(species_data.flavor_text_entries)):
+    entry = species_data.flavor_text_entries[i]
+    if entry.language.name == 'en':
+        if len(entry.flavor_text) < min_len:
+            min_len = len(entry.flavor_text)
+            min_index = i
+entry_words = species_data.flavor_text_entries[min_index].flavor_text.split()
+# reconstruct dex_entry
+dex_entry = [''] * 6
+line = 0
+for word in entry_words:
+    if len(dex_entry[line] + word) > 18:
+        line += 1
+        if line >= len(dex_entry):
+            print('Warning: full dex entry could not fit')
+            break
+    if len(dex_entry[line]) != 0:
+        dex_entry[line] += ' '
+    dex_entry[line] += word
+print('Parsed lines from dex entry: ' + str(dex_entry))
+# convert "Pokémon" to "#MON"
+for i in range(len(dex_entry)):
+    dex_entry[i] = dex_entry[i].replace('Pokémon', '#MON')
 
 with open(dex_entry_asm, 'a') as f:
     f.write('\tdb ' + genus + ' ; species name\n')
     f.write('\tdw ' + height + ', ' + weight + ' ; height, weight\n\n')
-    # TODO: write dex entry contents
+    # dex entry lines
+    f.write('\tdb   "' + dex_entry[0] + '"\n')
+    f.write('\tnext "' + dex_entry[1] + '"\n')
+    f.write('\tnext "' + dex_entry[2] + '"\n\n')
+    f.write('\tpage "' + dex_entry[3] + '"\n')
+    f.write('\tnext "' + dex_entry[4] + '"\n')
+    f.write('\tnext "' + dex_entry[5] + '@"\n')
     print('Wrote dex entry to ' + dex_entry_asm)
