@@ -560,7 +560,7 @@ weight_lb = weight_kg * 2.20462262 # convert kilograms to pounds
 weight = str(round(weight_lb * 10))
 print('Converted weight: ' + weight)
 
-# parse words from shortest flavor_tex_entry
+# parse words from shortest flavor_text_entry
 min_len = sys.maxsize
 min_index = 0
 for i in range(len(species_data.flavor_text_entries)):
@@ -582,10 +582,10 @@ for word in entry_words:
     if len(dex_entry[line]) != 0:
         dex_entry[line] += ' '
     dex_entry[line] += word
-print('Parsed lines from dex entry: ' + str(dex_entry))
 # convert "Pokémon" to "#MON"
 for i in range(len(dex_entry)):
     dex_entry[i] = dex_entry[i].replace('Pokémon', '#MON')
+print('Parsed lines from dex entry: ' + str(dex_entry))
 
 with open(dex_entry_asm, 'a') as f:
     f.write('\tdb ' + genus + ' ; species name\n')
@@ -598,3 +598,31 @@ with open(dex_entry_asm, 'a') as f:
     f.write('\tnext "' + dex_entry[4] + '"\n')
     f.write('\tnext "' + dex_entry[5] + '@"\n')
     print('Wrote dex entry to ' + dex_entry_asm)
+
+# dex entry pointer
+with open('data/pokemon/dex_entry_pointers.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdw ' + name_as_variable + 'PokedexEntry\n')
+    print('Wrote dex entry pointer to data/pokemon/dex_entry_pointers.asm')
+
+# dex entry path
+with open('data/pokemon/dex_entries.asm', 'a') as f:
+    f.write(name_as_variable + 'PokedexEntry::    INCLUDE "' + dex_entry_asm + '"\n')
+    print('Wrote dex entry path to data/pokemon/dex_entries.asm')
+
+# dex order new
+with open('data/pokemon/dex_order_new.asm', 'r+') as f:
+    data = f.readlines()
+    insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ' + constant + '\n')
+    print('Wrote dex order new to data/pokemon/dex_order_new.asm')
+
+# dex order alpha
+with open('data/pokemon/dex_order_alpha.asm', 'r+') as f:
+    data = f.readlines()
+    alpha_list = []
+    find_entries_in_range(data, alpha_list, 'table_width 1, AlphabeticalPokedexOrder', 'assert_table_length NUM_POKEMON', 4, '\n')
+    for name in alpha_list:
+        if constant < name:
+            break
+    insert_file(f, data, name, '\tdb ' + constant + '\n')
+    print('Wrote dex order alpha to data/pokemon/dex_order_alpha.asm')
