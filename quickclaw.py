@@ -500,7 +500,7 @@ if(species_data.evolution_chain.chain.species.id == species.id):
     # write egg moves to asm
     with open('data/pokemon/egg_moves.asm', 'r+') as f:
         data = f.readlines()
-        egg_moves_s = name_as_variable + 'EggMoves\n'
+        egg_moves_s = name_as_variable + 'EggMoves:\n'
         for move in egg_moves:
             if move in pokecrystal_moves:
                 egg_moves_s += '\tdb ' + move + '\n'
