@@ -7,7 +7,8 @@ requires [pokebase](https://pypi.org/project/pokebase/)
 * menu icons must be manually assigned
 * species graphics (including footprint) must be added manually
 
-## Parameters
+## Usage
+python3 quickclaw.py {species name} {parameters listed below}
 * -evs : writes ev yields to base_stats
 * -decap : decapitalized species names
 * -pc16 : follow [pokecrystal16](https://github.com/aaaaaa123456789/pokecrystal16) conventions
