@@ -97,31 +97,20 @@ if (len(sys.argv) > 2):
     for x in range(2, len(sys.argv)):
         args.append(sys.argv[x])
 
-flag_evs = False
-flag_decap = False
-flag_pc16 = False
-flag_no_filler_data = False
-flag_no_filler_pics = False
-flag_unique_icons = False
-flag_fix_footprints = False
-flag_fix_dba_pic = False
+flags = {
+    'evs': False,
+    'decap': False,
+    'pc16': False,
+    'no_filler_data': False,
+    'no_filler_pics': False,
+    'unique_icons': False,
+    'fix_footprints': False,
+    'fix_dba_pic': False
+}
 
-if '-evs' in args:
-    flag_evs = True
-if '-decap' in args:
-    flag_decap = True
-if '-pc16' in args:
-    flag_pc16 = True
-if '-nofillerdata' in args:
-    flag_no_filler_data = True
-if '-nofillerpics' in args:
-    flag_no_filler_pics = True
-if '-uniqueicons' in args:
-    flag_unique_icons = True
-if '-fixfootprints' in args:
-    flag_fix_footprints = True
-if '-fixdbapic' in args:
-    flag_fix_dba_pic = True
+for flag in flags:
+    if '-'+flag in args:
+        flags[flag] = True
 
 ### constant ###
 constant = create_constant(species_data.names[8].name)
@@ -135,7 +124,7 @@ with open('constants/pokemon_constants.asm', 'r+') as f:
 
 ### species name ###
 name = species_data.names[8].name
-if(flag_decap == False):
+if flags['decap'] == False:
     name = name.upper()
 name = pad_string(name, 10, '@', False)
 name = '"' + name + '"'
@@ -155,7 +144,7 @@ with open(stats_asm, 'w+'):
     print('Created file: ' + stats_asm)
 
 with open(stats_asm, 'a') as f:
-    if(flag_pc16):
+    if flags['pc16']:
         f.write('\tdb 0 ; species ID placeholder' + '\n\n')
         print('Wrote species ID placeholder to ' + stats_asm)
     else:
@@ -192,7 +181,7 @@ with open(stats_asm, 'a') as f:
     print('Wrote stats to ' + stats_asm)
 
 # ev yield
-if(flag_evs):
+if flags['evs']:
     ev_hp              = str(species.stats[0].effort)
     ev_attack          = str(species.stats[1].effort)
     ev_defense         = str(species.stats[2].effort)
@@ -298,7 +287,7 @@ with open(stats_asm, 'a') as f:
     print('Wrote gender ratio to ' + stats_asm)
 
 # unknown 1 data
-if(flag_no_filler_data == False):
+if flags['no_filler_data'] == False:
     with open(stats_asm, 'a') as f:
         f.write('\tdb 100 ; unknown 1\n')
         print('Wrote unknown 1 to ' + stats_asm)
@@ -312,7 +301,7 @@ with open(stats_asm, 'a') as f:
     print('Wrote step cycles to hatch to ' + stats_asm)
 
 # unknown 2 data
-if(flag_no_filler_data == False):
+if flags['no_filler_data'] == False:
     with open(stats_asm, 'a') as f:
         f.write('\tdb 5 ; unknown 2\n')
         print('Wrote unknown 2 to ' + stats_asm)
@@ -323,7 +312,7 @@ with open(stats_asm, 'a') as f:
     print('Wrote sprite dimensions to ' + stats_asm)
 
 # beta pics
-if(flag_no_filler_pics == False):
+if flags['no_filler_pics'] == False:
     with open(stats_asm, 'a') as f:
         f.write('\tdw NULL, NULL ; unused (beta front/back pics)\n')
         print('Wrote unused beta pics to ' + stats_asm)
@@ -540,7 +529,7 @@ with open('data/pokemon/cries.asm', 'r+') as f:
     print('Wrote cry placeholder to data/pokemon/cries.asm')
 
 ### icon ###
-if(flag_unique_icons):
+if flags['unique_icons']:
     # create icon constant
     with open('constants/icon_constants.asm', 'r+') as f:
         data = f.readlines()
@@ -549,7 +538,7 @@ if(flag_unique_icons):
 
 with open('data/pokemon/menu_icons.asm', 'r+') as f:
     data = f.readlines()
-    if(flag_unique_icons):
+    if flags['unique_icons']:
         insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdb ICON_' + constant + '\n')
         print('Wrote icon to data/pokemon/menu_icons.asm')
     else:
@@ -657,7 +646,7 @@ with open('data/pokemon/dex_order_alpha.asm', 'r+') as f:
 ### footprint ###
 with open('gfx/footprints.asm', 'r+') as f:
     data = f.readlines()
-    if flag_fix_footprints:
+    if flags['fix_footprints']:
         insert_file(f, data, 'assert_table_length $100', 'INCBIN "gfx/footprints/' + name_as_filename + '.1bpp"\n')
     else:
         insert_file(f, data, 'assert_table_length $100', 'INCBIN "gfx/footprints/' + name_as_filename + '.1bpp", footprint_top\n'
@@ -667,7 +656,7 @@ with open('gfx/footprints.asm', 'r+') as f:
 ### sprite and animation pointers ###
 with open('data/pokemon/pic_pointers.asm', 'r+') as f:
     data = f.readlines()
-    if flag_fix_dba_pic:
+    if flags['fix_dba_pic']:
         insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdba ' + name_as_variable + 'Frontpic\n')
         insert_file(f, data, 'assert_table_length NUM_POKEMON', '\tdba ' + name_as_variable + 'Backpic\n')
     else:
