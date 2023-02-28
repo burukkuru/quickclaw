@@ -377,7 +377,7 @@ def pokecrystal_base_data(species, flags):
     species.growth_rate = growth_rates[str(species.pokemon_data.growth_rate)]
     print('Found growth rate: ' + species.growth_rate)
     if species.growth_rate not in pokecrystal_growth_rates:
-        print('Warning: ' + species.growth_rate + ' is not defined in pokecrystal. Setting to NORMAL')
+        print('Warning: ' + species.growth_rate + ' is not defined in pokecrystal. Setting to GROWTH_MEDIUM_FAST')
         species.growth_rate = 'GROWTH_MEDIUM_FAST'
 
     with open(stats_asm, 'a') as f:
